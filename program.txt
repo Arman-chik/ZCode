@@ -1,0 +1,136 @@
+a = (2 + 2) * #Aa
+b = PI + a
+str = "a" * 5 + "Zzz"
+
+
+
+
+print "a = " + a + "\n"
+print "b = " + a +  "\n"
+print str + "\n"
+
+
+print "----IF ELSE-----------\n"
+
+if (1 <= 2) {
+    print "1 <= 2 \n"
+    if (1) {
+        print "True 1"
+    }
+} else {
+    print "1 > 2"
+}
+print "\n"
+
+
+if (40 > 100 || 7 == 33) print "Правда\n"
+else print "Ложь\n"
+
+
+
+
+print "---WHILE--------------\n"
+i = 0
+while (i < 10) {
+    print "i = " + i + "\n"
+    if (i == 7) {
+        break
+    }
+    i = i + 1
+}
+
+
+
+
+print "----DO WHILE-----------\n"
+num = 10
+do {
+    num = num + 20
+} while (num < 40)
+print num
+print "\n"
+
+
+
+print "----FOR--------------\n"
+for j = 0; j < 5; j = j + 1 {
+    if (j == 2) {
+         continue
+    }
+    print "j = " + j + "\n"
+}
+
+
+print "----FUNCTION-------\n"
+
+print cos(PI)
+print "\n"
+echo(100,"text",sin(pi/2))
+print "\n"
+
+
+print "----USER-FUNCTION-------\n"
+
+def func(a, b) {
+    c = a + b
+    print "a + b = " + c + "\n"
+}
+
+
+def name(a, b) {
+    echo("a = " + a, "b = " + b)
+}
+
+def sum(a, b) {
+    a = a + 20
+    return a + b
+}
+
+
+func(10, 5)
+name(1, "text")
+print sum(2, 3)
+
+print + "\n\n\n"
+
+
+
+
+
+
+
+print "----ARRAY-------\n"
+
+
+array = [[1, 2, 3], [11, 22, 33], [111, 222, 333]]
+
+print array[2][2]
+print + "\n"
+
+array[2][2] = "bro"
+print array[2][2] + "\n"
+
+print array[0][1] + "\n"
+
+
+print "\n\n"
+arr1 = newArray(2, 2)
+print arr1 + "\n"
+c = 0
+
+
+
+for i = 0; i <= 1; i = i + 1 {
+    for j = 0; j <= 1; j = j + 1 {
+        c = c + 1
+        print  c
+        print " "
+    }
+    print "\n"
+}
+
+print arr1[1][1]
+
+
+
+
