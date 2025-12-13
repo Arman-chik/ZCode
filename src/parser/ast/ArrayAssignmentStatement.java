@@ -5,8 +5,8 @@ import lib.Value;
 
 public final class ArrayAssignmentStatement implements Statement {
 
-    private ArrayAccessExpression array;
-    private Expression expression;
+    public ArrayAccessExpression array;
+    public Expression expression;
 
     public ArrayAssignmentStatement(ArrayAccessExpression array, Expression expression) {
         this.array = array;
@@ -24,6 +24,12 @@ public final class ArrayAssignmentStatement implements Statement {
 
         //array.getArray().set(array.lastIndex(), expression.eval());
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
 
     @Override
     public String toString() {

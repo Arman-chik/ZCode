@@ -7,8 +7,8 @@ import lib.Value;
 
 public class UnaryExpression implements Expression{
 
-    private Expression expr1;
-    private char operation;
+    public Expression expr1;
+    public char operation;
 
     public UnaryExpression(char operation, Expression expr1) {
         this.operation = operation;
@@ -23,6 +23,11 @@ public class UnaryExpression implements Expression{
             default:
                 return expr1.eval();
         }
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

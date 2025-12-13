@@ -5,7 +5,7 @@ import java.util.List;
 
 public final class BlockStatement implements Statement {
 
-    private final List<Statement> statements;
+    public final List<Statement> statements;
 
     public BlockStatement() {
         statements = new ArrayList<>();
@@ -21,6 +21,13 @@ public final class BlockStatement implements Statement {
             statement.execute();
         }
     }
+
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
 
     @Override
     public String toString() {

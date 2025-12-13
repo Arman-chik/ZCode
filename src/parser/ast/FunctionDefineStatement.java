@@ -5,14 +5,14 @@ import lib.CallFunction;
 
 import java.util.List;
 
-public class FunctionDefine implements Statement {
+public class FunctionDefineStatement implements Statement {
 
-    private String name;
-    private List<String> argNames;
-    private Statement body;
+    public String name;
+    public List<String> argNames;
+    public Statement body;
 
 
-    public FunctionDefine(String name, List<String> argNames, Statement body) {
+    public FunctionDefineStatement(String name, List<String> argNames, Statement body) {
         this.name = name;
         this.argNames = argNames;
         this.body = body;
@@ -23,6 +23,11 @@ public class FunctionDefine implements Statement {
         Functions.set(name, new CallFunction(argNames, body));
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {

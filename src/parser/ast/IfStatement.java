@@ -2,8 +2,8 @@ package parser.ast;
 
 public class IfStatement implements Statement{
 
-    private  Expression expression;
-    private  Statement ifStatement, elseStatement;
+    public Expression expression;
+    public Statement ifStatement, elseStatement;
 
 
     public IfStatement(Expression expression, Statement ifStatement, Statement elseStatement) {
@@ -20,6 +20,11 @@ public class IfStatement implements Statement{
         } else if (elseStatement != null) {
             elseStatement.execute();
         }
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
 

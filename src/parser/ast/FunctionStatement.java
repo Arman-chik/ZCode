@@ -2,7 +2,7 @@ package parser.ast;
 
 public class FunctionStatement implements Statement{
 
-    private FunctionalExpression function;
+    public FunctionalExpression function;
 
 
     public FunctionStatement(FunctionalExpression function) {
@@ -12,6 +12,11 @@ public class FunctionStatement implements Statement{
     @Override
     public void execute() {
         function.eval();
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
 

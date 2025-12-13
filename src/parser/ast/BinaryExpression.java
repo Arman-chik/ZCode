@@ -4,8 +4,8 @@ import lib.*;
 
 public class BinaryExpression implements Expression{
 
-    private Expression expr1, expr2;
-    private char operation;
+    public Expression expr1, expr2;
+    public char operation;
 
 
     public BinaryExpression(char operation,Expression expr1, Expression expr2) {
@@ -51,6 +51,11 @@ public class BinaryExpression implements Expression{
         }
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {

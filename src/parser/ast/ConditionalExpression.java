@@ -40,8 +40,8 @@ public class ConditionalExpression implements Expression{
     }
 
 
-    private Expression expr1, expr2;
-    private Operator operation;
+    public Expression expr1, expr2;
+    public Operator operation;
 
 
     public ConditionalExpression(Operator operation, Expression expr1, Expression expr2) {
@@ -80,6 +80,11 @@ public class ConditionalExpression implements Expression{
                 result = number1 == number2; break;
         }
         return new NumberValue(result);
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
 

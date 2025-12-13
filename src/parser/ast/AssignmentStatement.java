@@ -5,8 +5,8 @@ import lib.Variables;
 
 public class AssignmentStatement implements Statement{
 
-    private String variable;
-    private Expression expression;
+    public String variable;
+    public Expression expression;
 
 
 
@@ -22,6 +22,11 @@ public class AssignmentStatement implements Statement{
         Variables.set(variable, result);
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {

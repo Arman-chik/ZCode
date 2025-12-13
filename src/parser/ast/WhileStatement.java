@@ -2,8 +2,8 @@ package parser.ast;
 
 public class WhileStatement implements Statement{
 
-    private Expression condition;
-    private Statement statement;
+    public Expression condition;
+    public Statement statement;
 
 
     public WhileStatement(Expression condition, Statement statement) {
@@ -24,6 +24,11 @@ public class WhileStatement implements Statement{
         }
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {

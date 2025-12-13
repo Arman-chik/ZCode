@@ -145,7 +145,7 @@ public class Parser {
     }
 
 
-    private FunctionDefine functionDefine() {
+    private FunctionDefineStatement functionDefine() {
         String name = consume(TokenType.WORD).getText();
         consume(TokenType.LPAREN);
         List<String> argNames = new ArrayList<>();
@@ -158,7 +158,7 @@ public class Parser {
 
         Statement body = statementOrBlock();
 
-        return new FunctionDefine(name, argNames, body);
+        return new FunctionDefineStatement(name, argNames, body);
     }
 
 

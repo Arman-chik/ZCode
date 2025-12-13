@@ -2,8 +2,8 @@ package parser.ast;
 
 public class DoWhileStatement implements Statement{
 
-    private Expression condition;
-    private Statement statement;
+    public Expression condition;
+    public Statement statement;
 
 
     public DoWhileStatement(Expression condition, Statement statement) {
@@ -24,6 +24,11 @@ public class DoWhileStatement implements Statement{
         } while (condition.eval().asNumber() != 0);
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {

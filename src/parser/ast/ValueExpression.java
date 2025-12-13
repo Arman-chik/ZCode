@@ -7,7 +7,7 @@ import lib.Value;
 
 public class ValueExpression implements Expression{
 
-    private Value value;
+    public Value value;
 
     public ValueExpression(double value) {
         this.value = new NumberValue(value);
@@ -24,6 +24,11 @@ public class ValueExpression implements Expression{
         return value;
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {

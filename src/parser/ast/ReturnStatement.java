@@ -4,8 +4,8 @@ import lib.Value;
 
 public class ReturnStatement extends RuntimeException implements Statement{
 
-    private Expression expression;
-    private Value result;
+    public Expression expression;
+    public Value result;
 
 
     public ReturnStatement(Expression expression) {
@@ -21,6 +21,11 @@ public class ReturnStatement extends RuntimeException implements Statement{
     public void execute() {
         result = expression.eval();
         throw this;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

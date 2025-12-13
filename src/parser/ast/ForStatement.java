@@ -2,10 +2,10 @@ package parser.ast;
 
 public class ForStatement implements Statement{
 
-    private Statement initialization;
-    private Expression termination;  // условие завершение цикла
-    private Statement increment;
-    private Statement statement;
+    public Statement initialization;
+    public Expression termination;  // условие завершение цикла
+    public Statement increment;
+    public Statement statement;
 
 
     public ForStatement(Statement initialization, Expression termination, Statement increment, Statement statement) {
@@ -30,6 +30,11 @@ public class ForStatement implements Statement{
         }
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {

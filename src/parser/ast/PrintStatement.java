@@ -2,7 +2,7 @@ package parser.ast;
 
 public class PrintStatement implements Statement {
 
-    private Expression expression;
+    public Expression expression;
 
 
     public PrintStatement(Expression expression) {
@@ -15,6 +15,11 @@ public class PrintStatement implements Statement {
         System.out.print(expression.eval());
     }
 
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
     @Override
     public String toString() {
