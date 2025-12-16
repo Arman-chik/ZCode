@@ -1,5 +1,7 @@
 func()
 
+str = "ВоРоНеЖ"
+str1 ="   ВГУ   "
 def func() {
     print "Вызов функции до её определения \n"
 }
@@ -9,3 +11,9 @@ print(pow(2, 10) + "\n")
 print(abs(-20) + "\n")
 print(log(9, 3) + "\n")
 print(log(9, 3) + "\n")
+print(tan(sqrt(2)/2) + "\n")
+print(atan(1) + "\n")
+print(toLowerCase(str) + "\n")
+print(toUpperCase(str) + "\n")
+print(trim(str1) + "\n")
+print(replace(str, "еЖ", "") + "\n")
