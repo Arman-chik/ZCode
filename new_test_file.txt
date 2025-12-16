@@ -4,3 +4,8 @@ def func() {
     print "Вызов функции до её определения \n"
 }
 
+print(sqrt(16) + "\n")
+print(pow(2, 10) + "\n")
+print(abs(-20) + "\n")
+print(log(9, 3) + "\n")
+print(log(9, 3) + "\n")

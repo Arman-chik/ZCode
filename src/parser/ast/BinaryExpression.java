@@ -18,7 +18,8 @@ public class BinaryExpression implements Expression{
     public Value eval() {
         Value value1 = expr1.eval();
         Value value2 = expr2.eval();
-        if ((value1 instanceof StringValue) || (value1 instanceof ArrayValue)) {
+        if ((value1 instanceof StringValue) || (value2 instanceof StringValue)
+                || (value1 instanceof ArrayValue) || (value2 instanceof ArrayValue)) {
             String string1 = value1.asString();
             String string2 = value2.asString();
 

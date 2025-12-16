@@ -11,6 +11,7 @@ public class Functions {
 
 
     static {
+        // Математические функции.
         functions = new HashMap<>();
         functions.put("sin", new Function() {
             @Override
@@ -21,6 +22,7 @@ public class Functions {
                 return new NumberValue(Math.sin(args[0].asNumber()));
             }
         });
+
         functions.put("cos", new Function() {
             @Override
             public Value execute(Value... args) {
@@ -42,6 +44,67 @@ public class Functions {
                 return new NumberValue(Math.round(number));
             }
         });
+
+        functions.put("sqrt", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 1) {
+                    throw new RuntimeException("Функция sqrt ожидает один аргумент");
+                }
+                double num = args[0].asNumber();
+                if (num < 0) {
+                    throw new RuntimeException("Квадратный корень из отрицательного числа");
+                }
+                return new NumberValue(Math.sqrt(num));
+            }
+        });
+
+        functions.put("pow", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 2) {
+                    throw new RuntimeException("Функция pow ожидает два аргумента: основание и степень");
+                }
+                double base = args[0].asNumber();
+                double exponent = args[1].asNumber();
+                return new NumberValue(Math.pow(base, exponent));
+            }
+        });
+
+        functions.put("abs", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 1) {
+                    throw new RuntimeException("Функция abs ожидает один аргумент");
+                }
+                return new NumberValue(Math.abs(args[0].asNumber()));
+            }
+        });
+
+        functions.put("log", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length == 1) {
+                    return new NumberValue(Math.log(args[0].asNumber()));
+                } else if (args.length == 2) {
+                    double num = args[0].asNumber();
+                    double base = args[1].asNumber();
+                    return new NumberValue(Math.log(num) / Math.log(base));
+                }
+                throw new RuntimeException("Функция log ожидает 1 или 2 аргумента");
+            }
+        });
+
+        functions.put("exp", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 1) {
+                    throw new RuntimeException("Функция exp ожидает один аргумент");
+                }
+                return new NumberValue(Math.exp(args[0].asNumber()));
+            }
+        });
+
 
 
 
