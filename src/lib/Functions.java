@@ -506,6 +506,143 @@ public class Functions {
                 return new StringValue("unknown");
             }
         });
+
+
+
+
+        // Функции для работы с файлами
+
+        functions.put("readFile", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 1) {
+                    throw new RuntimeException("Функция readFile ожидает один аргумент: путь к файлу");
+                }
+                String path = args[0].asString();
+
+                try {
+                    java.nio.file.Path filePath = java.nio.file.Paths.get(path);
+                    byte[] bytes = java.nio.file.Files.readAllBytes(filePath);
+                    return new StringValue(new String(bytes, java.nio.charset.StandardCharsets.UTF_8));
+                } catch (java.nio.file.NoSuchFileException e) {
+                    throw new RuntimeException("Файл не найден: " + path);
+                } catch (java.io.IOException e) {
+                    throw new RuntimeException("Ошибка чтения файла: " + e.getMessage());
+                }
+            }
+        });
+
+
+        functions.put("writeFile", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 2) {
+                    throw new RuntimeException("Функция writeFile ожидает 2 аргумента: путь и содержимое");
+                }
+
+                String path = args[0].asString();
+                String content = args[1].asString();
+
+                try {
+                    java.nio.file.Files.write(
+                            java.nio.file.Paths.get(path),
+                            content.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+                    );
+                    return NumberValue.ZERO;
+                } catch (java.io.IOException e) {
+                    throw new RuntimeException("Ошибка записи в файл: " + e.getMessage());
+                }
+            }
+        });
+
+
+        functions.put("appendFile", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 2) {
+                    throw new RuntimeException("Функция appendFile ожидает 2 аргумента: путь и содержимое");
+                }
+
+                String path = args[0].asString();
+                String content = args[1].asString();
+
+                try {
+                    java.nio.file.Files.write(
+                            java.nio.file.Paths.get(path),
+                            content.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                            java.nio.file.StandardOpenOption.CREATE,
+                            java.nio.file.StandardOpenOption.APPEND
+                    );
+                    return NumberValue.ZERO;
+                } catch (java.io.IOException e) {
+                    throw new RuntimeException("Ошибка добавления в файл: " + e.getMessage());
+                }
+            }
+        });
+
+
+        functions.put("deleteFile", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 1) {
+                    throw new RuntimeException("Функция deleteFile ожидает один аргумент: путь к файлу");
+                }
+
+                String path = args[0].asString();
+
+                try {
+                    boolean deleted = java.nio.file.Files.deleteIfExists(java.nio.file.Paths.get(path));
+                    return new NumberValue(deleted ? 1 : 0);
+                } catch (java.io.IOException e) {
+                    throw new RuntimeException("Ошибка удаления файла: " + e.getMessage());
+                }
+            }
+        });
+
+
+        functions.put("readLines", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 1) {
+                    throw new RuntimeException("Функция readLines ожидает один аргумент: путь к файлу");
+                }
+                String path = args[0].asString();
+
+                try {
+                    java.util.List<String> lines = java.nio.file.Files.readAllLines(
+                            java.nio.file.Paths.get(path),
+                            java.nio.charset.StandardCharsets.UTF_8
+                    );
+
+                    // Преобразуем список строк в массив
+                    ArrayValue array = new ArrayValue(lines.size());
+                    for (int i = 0; i < lines.size(); i++) {
+                        array.set(i, new StringValue(lines.get(i)));
+                    }
+                    return array;
+                } catch (java.nio.file.NoSuchFileException e) {
+                    throw new RuntimeException("Файл не найден: " + path);
+                } catch (java.io.IOException e) {
+                    throw new RuntimeException("Ошибка чтения файла: " + e.getMessage());
+                }
+            }
+        });
+
+
+
+        // Проверка существует ли файл
+        functions.put("fileExists", new Function() {
+            @Override
+            public Value execute(Value... args) {
+                if (args.length != 1) {
+                    throw new RuntimeException("Функция fileExists ожидает один аргумент: путь к файлу");
+                }
+                String path = args[0].asString();
+                boolean exists = java.nio.file.Files.exists(java.nio.file.Paths.get(path));
+                return new NumberValue(exists ? 1 : 0);
+            }
+        });
+
     }
 
     public static boolean isExists(String key) {
