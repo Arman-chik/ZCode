@@ -24,4 +24,5 @@ public interface Visitor {
     void visit(ValueExpression s);
     void visit(VariableExpression s);
     void visit(WhileStatement s);
+    void visit(UseStatement s);
 }

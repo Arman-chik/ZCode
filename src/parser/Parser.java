@@ -71,6 +71,9 @@ public class Parser {
         if (match(TokenType.RETURN)) {
             return new ReturnStatement(expression());
         }
+        if (match(TokenType.USE)) {
+            return new UseStatement(expression());
+        }
         if (match(TokenType.FOR)) {
             return forStatement();
         }

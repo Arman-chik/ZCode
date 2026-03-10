@@ -13,7 +13,16 @@ print(log(9, 3) + "\n")
 print(log(9, 3) + "\n")
 print(tan(sqrt(2)/2) + "\n")
 print(atan(1) + "\n")
+
 print(toLowerCase(str) + "\n")
 print(toUpperCase(str) + "\n")
 print(trim(str1) + "\n")
-print(replace(str, "еЖ", "") + "\n")
+print(replace(str, "еЖ", "aa") + "\n")
+
+writeFile("output.txt", "Hello")
+
+arr = [1, 2, 3, 4, 5]
+a = 4
+print(ceil(a) + "\n")
+
+print readFile("output.txt")
