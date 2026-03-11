@@ -2,7 +2,7 @@ package parser.ast;
 
 import lib.modules.Module;
 
-public final class UseStatement implements Statement {
+public class UseStatement implements Statement {
 
 
 
