@@ -96,6 +96,40 @@ public class std implements Module {
             }
             return newArray;
         });
-    }
 
+
+        // Длина массива
+        Functions.set("len", args -> {
+            if (args.length != 1) {
+                throw new RuntimeException("Функция len ожидает ровно один аргумент");
+            }
+            if (args[0] instanceof ArrayValue) {
+                return new NumberValue(((ArrayValue) args[0]).size());
+            }
+            if (args[0] instanceof StringValue) {
+                return new NumberValue(args[0].asString().length());
+            }
+            throw new RuntimeException("Аргумент функции len должен быть массивом или строкой");
+        });
+
+        // Разворот массива
+        Functions.set("reverse", args -> {
+            if (args.length != 1) {
+                throw new RuntimeException("Функция reverse ожидает один аргумент");
+            }
+
+            if (args[0] instanceof ArrayValue) {
+                ArrayValue array = (ArrayValue) args[0];
+                ArrayValue reversed = new ArrayValue(array.size());
+                for (int i = 0; i < array.size(); i++) {
+                    reversed.set(i, array.get(array.size() - 1 - i));
+                }
+                return reversed;
+            } else {
+                // Для строк разворот уже есть в strings модуле, но оставим для обратной совместимости
+                String str = args[0].asString();
+                return new StringValue(new StringBuilder(str).reverse().toString());
+            }
+        });
+    }
 }
