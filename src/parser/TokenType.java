@@ -26,28 +26,36 @@ public enum TokenType {
 
 
 
-
-    PLUS,
-    MINUS,
-    STAR,
-    SLASH,
-    PROCENT,
-    EQ,
+    PLUS, // +
+    MINUS, // -
+    STAR, // *
+    SLASH, // /
+    PERCENT,// %
+    EQ, // =
     EQEQ, // ==
-    EXCL,  // not  !
+    EXCL, // !
     EXCLEQ, // !=
-    LT, //<
-    LTEQ,
-    GT, //>
-    GTEQ,
+    LTEQ, // <=
+    LT, // <
+    GT, // >
+    GTEQ, // >=
 
 
 
-    BAR,      // |
-    BARBAR,  // ||
-    AMP,     // &
-    AMPAMP,  // &&
+    LTLT, // <<
+    GTGT, // >>
+    GTGTGT, // >>>
 
+    TILDE, // ~
+    CARET, // ^
+    BAR, // |
+    BARBAR, // ||
+    AMP, // &
+    AMPAMP, // &&
+
+
+    QUESTION, // ?
+    COLON, // :
 
 
     LPAREN, // (

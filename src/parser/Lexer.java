@@ -13,7 +13,7 @@ public class Lexer {
     private int pos; //текущая позиция
 
 
-    private static String OPERATOR_CHARS = "+-*/%(){}[]=<>!&|;,";
+    private static String OPERATOR_CHARS = "+-*/%(){}[]=<>!&|;,^~?:";
 
 
     private static Map<String, TokenType> OPERATORS;
@@ -23,7 +23,7 @@ public class Lexer {
         OPERATORS.put("-", TokenType.MINUS);
         OPERATORS.put("*", TokenType.STAR);
         OPERATORS.put("/", TokenType.SLASH);
-        OPERATORS.put("%", TokenType.PROCENT);
+        OPERATORS.put("%", TokenType.PERCENT);
         OPERATORS.put("(", TokenType.LPAREN);
         OPERATORS.put(")", TokenType.RPAREN);
         OPERATORS.put("{", TokenType.LBRACE);
@@ -35,6 +35,10 @@ public class Lexer {
         OPERATORS.put(">", TokenType.GT);
         OPERATORS.put(";", TokenType.COMMA);
         OPERATORS.put(",", TokenType.COM);
+        OPERATORS.put("^", TokenType.CARET);
+        OPERATORS.put("~", TokenType.TILDE);
+        OPERATORS.put("?", TokenType.QUESTION);
+        OPERATORS.put(":", TokenType.COLON);
 
         OPERATORS.put("!", TokenType.EXCL);
         OPERATORS.put("&", TokenType.AMP);
@@ -47,6 +51,10 @@ public class Lexer {
 
         OPERATORS.put("&&", TokenType.AMPAMP);
         OPERATORS.put("||", TokenType.BARBAR);
+
+        OPERATORS.put("<<", TokenType.LTLT);
+        OPERATORS.put(">>", TokenType.GTGT);
+        OPERATORS.put(">>>", TokenType.GTGTGT);
 
     }
 

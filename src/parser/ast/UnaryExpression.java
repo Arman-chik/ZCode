@@ -7,21 +7,42 @@ import lib.Value;
 
 public class UnaryExpression implements Expression{
 
-    public Expression expr1;
-    public char operation;
+    public static enum Operator {
+        NEGATE("-"),
+        // Boolean
+        NOT("!"),
+        // Bitwise
+        COMPLEMENT("~");
 
-    public UnaryExpression(char operation, Expression expr1) {
+        private final String name;
+
+        private Operator(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public Expression expr1;
+    public Operator operation;
+
+    public UnaryExpression(Operator operation, Expression expr1) {
         this.operation = operation;
         this.expr1 = expr1;
     }
 
     @Override
     public Value eval() {
+        final Value value = expr1.eval();
         switch (operation) {
-            case '-': return new NumberValue(-expr1.eval().asNumber());
-            case '+':
+            case NEGATE: return new NumberValue(-value.asNumber());
+            case COMPLEMENT: return new NumberValue(~(int)value.asNumber());
+            case NOT: return new NumberValue(value.asNumber() != 0 ? 0 : 1);
             default:
-                return expr1.eval();
+                throw new RuntimeException("Operation " + operation + " is not supported");
         }
     }
 
@@ -32,6 +53,6 @@ public class UnaryExpression implements Expression{
 
     @Override
     public String toString() {
-        return String.format("%c %s", operation, expr1);
+        return String.format("%s %s", operation, expr1);
     }
 }
