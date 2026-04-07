@@ -93,7 +93,7 @@ public class strings implements Module {
         });
 
         // Разворот строки
-        Functions.set("reverse", args -> {
+        Functions.set("reverseString", args -> {
             if (args.length != 1) {
                 throw new RuntimeException("Функция reverse ожидает один аргумент");
             }

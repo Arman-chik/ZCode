@@ -113,7 +113,7 @@ public class std implements Module {
         });
 
         // Разворот массива
-        Functions.set("reverse", args -> {
+        Functions.set("reverseArray", args -> {
             if (args.length != 1) {
                 throw new RuntimeException("Функция reverse ожидает один аргумент");
             }

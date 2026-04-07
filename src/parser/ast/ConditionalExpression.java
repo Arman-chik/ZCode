@@ -49,6 +49,14 @@ public class ConditionalExpression implements Expression{
     @Override
     public Value eval() {
         Value value1 = expr1.eval();
+
+        switch (operation) {
+            case AND: return NumberValue.fromBoolean(
+                    (value1.asNumber() != 0) && (expr2.eval().asNumber() != 0) );
+            case OR: return NumberValue.fromBoolean(
+                    (value1.asNumber() != 0) || (expr2.eval().asNumber() != 0) );
+        }
+
         Value value2 = expr2.eval();
 
         double number1, number2;
@@ -70,13 +78,11 @@ public class ConditionalExpression implements Expression{
             case GT: result = number1 > number2; break;
             case GTEQ: result = number1 >= number2; break;
 
-            case AND: result = (number1 != 0) && (number2 != 0); break;
-            case OR: result = (number1 != 0) || (number2 != 0); break;
 
             default:
                 throw new RuntimeException("Operation " + operation + " is not supported");
         }
-        return new NumberValue(result);
+        return NumberValue.fromBoolean(result);
     }
 
     @Override
@@ -87,6 +93,6 @@ public class ConditionalExpression implements Expression{
 
     @Override
     public String toString() {
-        return String.format("(%s %s %s)", expr1, operation.getName(), expr2);
+        return String.format("%s %s %s", expr1, operation.getName(), expr2);
     }
 }

@@ -4,10 +4,23 @@ package lib.modules;
 import lib.Functions;
 import lib.NumberValue;
 import lib.Value;
+import lib.Variables;
 
 public class math implements Module {
     @Override
     public void init() {
+
+        Variables.set("PI", new NumberValue(Math.PI));
+        Variables.set("pi", new NumberValue(Math.PI));
+        Variables.set("ПИ", new NumberValue(Math.PI));
+        Variables.set("пи", new NumberValue(Math.PI));
+        Variables.set("E", new NumberValue(Math.E));
+        Variables.set("e", new NumberValue(Math.E));
+        Variables.set("GOLDEN_RATIO", new NumberValue(1.628));
+
+
+
+
         Functions.set("sin", args -> {
             if (args.length != 1) {
                 throw new RuntimeException("Ожидался только один аргумент");

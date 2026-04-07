@@ -1,3 +1,23 @@
+use "math"
+use "strings"
+use "std"
+use "files"
+
+
+print "2^10 = " + pow(2, 10) + "\n"
+
+
+text = "  Hello, World!  "
+print "reverse string: '" + reverseString(text) + "'\n"
+print "trim: '" + trim(text) + "'\n"
+print "toUpperCase: " + toUpperCase(text) + "\n"
+print "toLowerCase: " + toLowerCase(text) + "\n"
+print "replace: " + replace(text, "World", "ZCode") + "\n"
+print "startsWith '  He': " + startsWith(text, "  He") + "\n"
+print "indexOf 'World': " + indexOf(text, "World") + "\n"
+print "substring 2-7: " + substring(text, 2, 7) + "\n\n"
+
+
 func()
 
 str = "ВоРоНеЖ"
@@ -13,6 +33,8 @@ print(log(9, 3) + "\n")
 print(log(9, 3) + "\n")
 print(tan(sqrt(2)/2) + "\n")
 print(atan(1) + "\n")
+print("sin(pi/2) = " + sin(pi/2) + "\n")
+
 
 print(toLowerCase(str) + "\n")
 print(toUpperCase(str) + "\n")
@@ -22,7 +44,17 @@ print(replace(str, "еЖ", "aa") + "\n")
 writeFile("output.txt", "Hello")
 
 arr = [1, 2, 3, 4, 5]
+print "reverse arr  " + reverseArray(arr) + "\n"
 a = 4
 print(ceil(a) + "\n")
 
 print readFile("output.txt")
+
+
+
+
+
+print "=== ФАЙЛОВЫЕ ФУНКЦИИ ===\n"
+writeFile("data.txt", "Hello from ZCode!")
+content = readFile("data.txt")
+print "Прочитано из файла: " + content + "\n"
