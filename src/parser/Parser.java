@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Parser {
 
-    private static Token EOF = new Token(TokenType.EOF, "");
+    private static Token EOF = new Token(TokenType.EOF, "", -1, -1);
     private List<Token> tokens;
     private int pos;
     private int size;
@@ -98,7 +98,7 @@ public class Parser {
             consume(TokenType.EQ);
             return new ArrayAssignmentStatement(array, expression());
         }
-        throw new RuntimeException("Неизвестный оператор");
+        throw new ParseException("Неизвестный оператор: " + get(0));
     }
 
 
@@ -143,7 +143,7 @@ public class Parser {
         Expression termination = expression();
         consume(TokenType.COMMA);
         Statement increment = assignmentStatement();
-        match(TokenType.RPAREN);
+        match(TokenType.RPAREN); // необязательные скобки
         Statement statement = statementOrBlock();
 
         return new ForStatement(initialization, termination, increment, statement);
@@ -455,7 +455,7 @@ public class Parser {
             match(TokenType.RPAREN);
             return result;
         }
-        throw new RuntimeException("Неизвестное выражение");
+        throw new ParseException("Неизвестное выражение: " + current);
     }
 
 
@@ -468,7 +468,7 @@ public class Parser {
     private Token consume(TokenType type) {
         Token current = get(0);
         if (type != current.getType()) {
-            throw new RuntimeException("Токен " + current + "не соответствует токену " +  type);
+            throw new ParseException("Токен " + current + "не соответствует токену " +  type);
         }
 
         pos++;

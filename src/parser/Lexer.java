@@ -10,7 +10,10 @@ public class Lexer {
     private String input;
     private int length;
     private List<Token> tokens;
+
+
     private int pos; //текущая позиция
+    private int row, col;
 
 
     private static String OPERATOR_CHARS = "+-*/%(){}[]=<>!&|;,^~?:";
@@ -65,6 +68,7 @@ public class Lexer {
         length = input.length();
 
         tokens = new ArrayList<>();
+        row = col = 1;
     }
 
 
@@ -97,7 +101,7 @@ public class Lexer {
         while (true) {
             if (current == '.') {
                 if (buffer.indexOf(".") != -1) {
-                    throw new RuntimeException("Неправильное вещественное число");
+                    throw error("Неправильное вещественное число");
                 }
             } else if (!Character.isDigit(current)) {
                 break;
@@ -195,6 +199,9 @@ public class Lexer {
         char current = peek(0);
 
         while (true) {
+            if (current == '\0') {
+                throw error("При разборе текстовой строки достигнут конец файла.");
+            }
             if (current == '\\') {
                 current = next();
                 switch (current) {
@@ -230,7 +237,7 @@ public class Lexer {
         char current = peek(0);
         while (true) {
             if (current == '\0') {
-                throw new RuntimeException("Пропущен закрывающий тэг");
+                throw error("При разборе многострочного комментария достигнут конец файла");
             }
             if (current == '*' && peek(1) == '/') {
                 break;
@@ -246,7 +253,14 @@ public class Lexer {
 
     private char next() {
         pos++;
-        return peek(0);
+        char result = peek(0);
+        if (result == '\n') {
+            row++;
+            col = 1;
+        } else {
+            col++;
+        }
+        return result;
     }
 
     private char peek(int relativePosition) {
@@ -266,6 +280,10 @@ public class Lexer {
     }
 
     private void addToken(TokenType type, String text) {
-        tokens.add(new Token(type, text));
+        tokens.add(new Token(type, text, row, col));
+    }
+
+    private LexerException error(String text) {
+        return new LexerException(row, col, text);
     }
 }
