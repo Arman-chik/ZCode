@@ -58,3 +58,178 @@ print "=== ФАЙЛОВЫЕ ФУНКЦИИ ===\n"
 writeFile("data.txt", "Hello from ZCode!")
 content = readFile("data.txt")
 print "Прочитано из файла: " + content + "\n"
+
+
+
+
+print "=== ОКОНКА ===\n"
+
+
+use "canvas"
+
+window("Арканоид", 800, 600)
+
+// Платформа
+paddleX = 350
+paddleY = 550
+paddleWidth = 100
+paddleHeight = 15
+
+// Мяч
+ballX = 400
+ballY = 530
+ballSize = 10
+ballDx = 3
+ballDy = -3
+
+// Кирпичи
+bricks = newArray(8, 5)
+score = 0
+lives = 3
+
+// Создаём кирпичи
+for i = 0; i < 8; i = i + 1 {
+    for j = 0; j < 5; j = j + 1 {
+        bricks[i][j] = 1
+    }
+}
+
+while true {
+    // Очистка
+    color(0, 0, 0)
+    frect(0, 0, 800, 600)
+
+    // Рисуем кирпичи
+    for i = 0; i < 8; i = i + 1 {
+        for j = 0; j < 5; j = j + 1 {
+            if bricks[i][j] == 1 {
+                // Разные цвета для рядов
+                if j == 0 { color(255, 0, 0) }
+                if j == 1 { color(255, 100, 0) }
+                if j == 2 { color(255, 200, 0) }
+                if j == 3 { color(100, 255, 0) }
+                if j == 4 { color(0, 255, 100) }
+                frect(i * 100, j * 30 + 50, 95, 25)
+            }
+        }
+    }
+
+    // Управление платформой
+    key = keypressed()
+    if key == VK_LEFT {
+        paddleX = paddleX - 7
+    }
+    if key == VK_RIGHT {
+        paddleX = paddleX + 7
+    }
+
+    // Границы платформы
+    if paddleX < 0 { paddleX = 0 }
+    if paddleX > 800 - paddleWidth { paddleX = 800 - paddleWidth }
+
+    // Движение мяча
+    ballX = ballX + ballDx
+    ballY = ballY + ballDy
+
+    // Стены
+    if ballX <= 0 {
+        ballX = 0
+        ballDx = -ballDx
+    }
+    if ballX >= 800 - ballSize {
+        ballX = 800 - ballSize
+        ballDx = -ballDx
+    }
+    if ballY <= 0 {
+        ballY = 0
+        ballDy = -ballDy
+    }
+
+    // Потеря жизни
+    if ballY >= 600 {
+        lives = lives - 1
+        ballX = 400
+        ballY = 530
+        ballDx = 3
+        ballDy = -3
+    }
+
+    // Платформа
+    if ballY + ballSize >= paddleY {
+        if ballX + ballSize >= paddleX {
+            if ballX <= paddleX + paddleWidth {
+                ballDy = -ballDy
+                // Меняем направление в зависимости от места удара
+                hitPos = (ballX - paddleX) / paddleWidth
+                ballDx = ballDx + (hitPos - 0.5) * 4
+            }
+        }
+    }
+
+    // Кирпичи
+    for i = 0; i < 8; i = i + 1 {
+        for j = 0; j < 5; j = j + 1 {
+            if bricks[i][j] == 1 {
+                brickX = i * 100
+                brickY = j * 30 + 50
+                if ballX + ballSize >= brickX {
+                    if ballX <= brickX + 95 {
+                        if ballY + ballSize >= brickY {
+                            if ballY <= brickY + 25 {
+                                bricks[i][j] = 0
+                                score = score + 10
+                                ballDy = -ballDy
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Проверка победы
+    allBricks = 1
+    for i = 0; i < 8; i = i + 1 {
+        for j = 0; j < 5; j = j + 1 {
+            if bricks[i][j] == 1 {
+                allBricks = 0
+            }
+        }
+    }
+
+    if allBricks == 1 {
+        color(255, 255, 0)
+        drawstring("ТЫ ПОБЕДИЛ!", 350, 300)
+        repaint()
+        sleep(2000)
+        break
+    }
+
+    if lives <= 0 {
+        color(255, 0, 0)
+        drawstring("GAME OVER!", 350, 300)
+        repaint()
+        sleep(2000)
+        break
+    }
+
+    // Рисуем платформу
+    color(0, 100, 255)
+    frect(paddleX, paddleY, paddleWidth, paddleHeight)
+
+    // Рисуем мяч
+    color(255, 255, 255)
+    foval(ballX, ballY, ballSize, ballSize)
+
+    // Отображаем счёт и жизни
+    color(255, 255, 255)
+    drawstring("Счёт: " + score, 10, 30)
+    drawstring("Жизни: " + lives, 10, 50)
+
+    repaint()
+    sleep(16)
+
+    if keypressed() == VK_ESCAPE {
+        break
+    }
+}
