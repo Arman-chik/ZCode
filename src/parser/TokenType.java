@@ -24,6 +24,12 @@ public enum TokenType {
     USE,
 
 
+    CLASS,
+    NEW,
+    THIS,
+    DOT,
+
+
 
 
     PLUS, // +

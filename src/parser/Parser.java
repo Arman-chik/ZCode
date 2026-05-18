@@ -50,57 +50,177 @@ public class Parser {
 
 
     private Statement statement() {
-        if (match(TokenType.PRINT)) {
-            return new PrintStatement(expression());
-        }
-        if (match(TokenType.IF)) {
-            return ifElse();
-        }
-        if (match(TokenType.WHILE)) {
-            return whileStatement();
-        }
-        if (match(TokenType.DO)) {
-            return doWhileStatement();
-        }
-        if (match(TokenType.BREAK)) {
-            return new BreakStatement();
-        }
-        if (match(TokenType.CONTINUE)) {
-            return new ContinueStatement();
-        }
+        if (match(TokenType.CLASS)) return classDeclaration();
+        if (match(TokenType.PRINT)) return new PrintStatement(expression());
+        if (match(TokenType.IF)) return ifElse();
+        if (match(TokenType.WHILE)) return whileStatement();
+        if (match(TokenType.DO)) return doWhileStatement();
+        if (match(TokenType.BREAK)) return new BreakStatement();
+        if (match(TokenType.CONTINUE)) return new ContinueStatement();
         if (match(TokenType.RETURN)) {
+            // return может быть без выражения (просто выход из функции)
+            if (lookMatch(0, TokenType.RBRACE) || lookMatch(0, TokenType.EOF) ||
+                    lookMatch(0, TokenType.ELSE) || lookMatch(0, TokenType.WHILE) ||
+                    lookMatch(0, TokenType.FOR) || lookMatch(0, TokenType.IF)) {
+                return new ReturnStatement(null);
+            }
             return new ReturnStatement(expression());
         }
-        if (match(TokenType.USE)) {
-            return new UseStatement(expression());
+        if (match(TokenType.USE)) return new UseStatement(expression());
+        if (match(TokenType.FOR)) return forStatement();
+        if (match(TokenType.DEF)) return functionDefine();
+
+
+        // Проверки на присваивания
+        // 1. var = expr
+        if (lookMatch(0, TokenType.WORD) && lookMatch(1, TokenType.EQ))
+            return assignmentStatement();
+
+        // 2. obj.field = expr (например, ball.dy = -ball.dy)
+        if (lookMatch(0, TokenType.WORD) && lookMatch(1, TokenType.DOT) &&
+                lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.EQ))
+            return assignmentStatement();
+
+        // 3. this.field = expr (например, this.x = x) ← ВАШ СЛУЧАЙ [9 18]
+        if (lookMatch(0, TokenType.THIS) && lookMatch(1, TokenType.DOT) &&
+                lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.EQ))
+            return assignmentStatement();
+
+        // 4. arr[idx] = expr
+        if (lookMatch(0, TokenType.WORD) && lookMatch(1, TokenType.LBRACKET))
+            return assignmentStatement();
+
+        // 5. this.arr[i][j] = expr
+        if (lookMatch(0, TokenType.THIS) && lookMatch(1, TokenType.DOT) &&
+                lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.LBRACKET)) {
+
+            int scan = 3;  // начинаем с первого '['
+            int depth = 0;
+            boolean isAssignment = false;
+
+            while (pos + scan < size) {
+                TokenType t = get(scan).getType();
+                if (t == TokenType.LBRACKET) depth++;
+                else if (t == TokenType.RBRACKET) depth--;
+                else if (t == TokenType.EQ && depth == 0) {
+                    isAssignment = true;
+                    break;  // Если нашли '=' вне скобок это присаивание
+                }
+                else if (t == TokenType.DOT || t == TokenType.LPAREN || t == TokenType.EOF) {
+                    break;  // Это вызов метода
+                }
+                scan++;
+            }
+            if (isAssignment) return assignmentStatement();
         }
-        if (match(TokenType.FOR)) {
-            return forStatement();
-        }
-        if (match(TokenType.DEF)) {
-            return functionDefine();
-        }
-        if (get(0).getType() == TokenType.WORD && get(1).getType() == TokenType.LPAREN) {
-            return new FunctionStatement(function());
-        }
-        return assignmentStatement();
+        // 6. this.obj.field = expr (например, this.ball.dy = -this.ball.dy)
+        if (lookMatch(0, TokenType.THIS) && lookMatch(1, TokenType.DOT) &&
+                lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.DOT) &&
+                lookMatch(4, TokenType.WORD) && lookMatch(5, TokenType.EQ))
+            return assignmentStatement();
+
+        // Если ни одно присваивание не распознано то возвращаем обычное выражение
+        return new ExpressionStatement(expression());
     }
 
     private Statement assignmentStatement() {
-
+        // 1. var = expr
         if (lookMatch(0, TokenType.WORD) && lookMatch(1, TokenType.EQ)) {
             String variable = consume(TokenType.WORD).getText();
             consume(TokenType.EQ);
             return new AssignmentStatement(variable, expression());
         }
+        // 2. this.field = expr
+        if (lookMatch(0, TokenType.THIS) && lookMatch(1, TokenType.DOT) && lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.EQ)) {
+            consume(TokenType.THIS); consume(TokenType.DOT);
+            String fieldName = consume(TokenType.WORD).getText();
+            consume(TokenType.EQ);
+            return new ThisAssignmentStatement(fieldName, expression());
+        }
+        // 3. arr[idx] = expr
         if (lookMatch(0, TokenType.WORD) && lookMatch(1, TokenType.LBRACKET)) {
             ArrayAccessExpression array = (ArrayAccessExpression) element();
             consume(TokenType.EQ);
             return new ArrayAssignmentStatement(array, expression());
         }
+        // 4. obj.field = expr
+        if (lookMatch(0, TokenType.WORD) && lookMatch(1, TokenType.DOT) && lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.EQ)) {
+            Expression target = new VariableExpression(consume(TokenType.WORD).getText());
+            consume(TokenType.DOT);
+            String fieldName = consume(TokenType.WORD).getText();
+            consume(TokenType.EQ);
+            return new MemberAssignmentStatement(target, fieldName, expression());
+        }
+        // 5. this.arr[idx] = expr
+        if (lookMatch(0, TokenType.THIS) && lookMatch(1, TokenType.DOT) && lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.LBRACKET)) {
+            consume(TokenType.THIS); consume(TokenType.DOT);
+            String fieldName = consume(TokenType.WORD).getText();
+            List<Expression> indices = new ArrayList<>();
+            while (lookMatch(0, TokenType.LBRACKET)) {
+                consume(TokenType.LBRACKET);
+                indices.add(expression());
+                consume(TokenType.RBRACKET);
+            }
+            consume(TokenType.EQ);
+            return new ThisArrayAssignmentStatement(fieldName, indices, expression());
+        }
+
+        // 6. this.obj.field = expr
+        if (lookMatch(0, TokenType.THIS) && lookMatch(1, TokenType.DOT) &&
+                lookMatch(2, TokenType.WORD) && lookMatch(3, TokenType.DOT) &&
+                lookMatch(4, TokenType.WORD) && lookMatch(5, TokenType.EQ)) {
+
+            consume(TokenType.THIS); consume(TokenType.DOT);
+            String objField = consume(TokenType.WORD).getText();  // например, "ball"
+            consume(TokenType.DOT);
+            String fieldName = consume(TokenType.WORD).getText();  // например, "dy"
+            consume(TokenType.EQ);
+
+            Expression target = new MemberAccessExpression(
+                    new VariableExpression("this"),
+                    objField,
+                    null  // null = это поле, а не вызов метода
+            );
+
+            return new MemberAssignmentStatement(target, fieldName, expression());
+        }
+
         throw new ParseException("Неизвестный оператор: " + get(0));
     }
 
+    private Statement classDeclaration() {
+        String name = consume(TokenType.WORD).getText();
+        List<String> fields = new java.util.ArrayList<>();
+        List<MethodDefineStatement> methods = new java.util.ArrayList<>();
+
+        consume(TokenType.LBRACE);
+        while (!lookMatch(0, TokenType.RBRACE)) {
+            if (lookMatch(0, TokenType.WORD) && lookMatch(1, TokenType.LPAREN)) {
+                methods.add(methodDeclaration());
+            } else {
+                fields.add(consume(TokenType.WORD).getText());
+            }
+        }
+        consume(TokenType.RBRACE); // закрывающая скобка
+        return new ClassDefineStatement(name, fields, methods);
+    }
+
+
+    private MethodDefineStatement methodDeclaration() {
+        String name = consume(TokenType.WORD).getText();
+        consume(TokenType.LPAREN);
+        List<String> params = new java.util.ArrayList<>();
+
+        if (!match(TokenType.RPAREN)) { // если не пустой список параметров
+            do {
+                params.add(consume(TokenType.WORD).getText());
+            } while (match(TokenType.COM)); // запятая обязательна между параметрами
+            consume(TokenType.RPAREN); // закрывающая скобка
+        }
+
+        Statement body = statementOrBlock();
+        return new MethodDefineStatement(name, params, body);
+    }
 
 
     private Statement ifElse() {
@@ -139,9 +259,16 @@ public class Parser {
     private Statement forStatement() {
         match(TokenType.LPAREN); // необязательные скобки
         Statement initialization = assignmentStatement();
-        consume(TokenType.COMMA);
+        if (!match(TokenType.COM) && !match(TokenType.COMMA)) {
+            throw new ParseException("Ожидался разделитель ',' или ';' после инициализации в for");
+        }
+
         Expression termination = expression();
-        consume(TokenType.COMMA);
+
+        if (!match(TokenType.COM) && !match(TokenType.COMMA)) {
+            throw new ParseException("Ожидался разделитель ',' или ';' после условия в for");
+        }
+
         Statement increment = assignmentStatement();
         match(TokenType.RPAREN); // необязательные скобки
         Statement statement = statementOrBlock();
@@ -201,7 +328,7 @@ public class Parser {
             indices.add(expression());
             consume(TokenType.RBRACKET);
         } while(lookMatch(0, TokenType.LBRACKET));
-        
+
         return new ArrayAccessExpression(variable, indices);
     }
 
@@ -411,19 +538,19 @@ public class Parser {
 
     private Expression unary() {
         if (match(TokenType.MINUS)) {
-            return new UnaryExpression(UnaryExpression.Operator.NEGATE, primary());
+            return new UnaryExpression(UnaryExpression.Operator.NEGATE, postfix());
         }
         if (match(TokenType.EXCL)) {
-            return new UnaryExpression(UnaryExpression.Operator.NOT, primary());
+            return new UnaryExpression(UnaryExpression.Operator.NOT, postfix());
         }
         if (match(TokenType.TILDE)) {
-            return new UnaryExpression(UnaryExpression.Operator.COMPLEMENT, primary());
+            return new UnaryExpression(UnaryExpression.Operator.COMPLEMENT, postfix());
         }
         if (match(TokenType.PLUS)) {
             //return new UnaryExpression('+', primary());
-            return primary();
+            return postfix();
         }
-        return primary();
+        return postfix();
     }
 
     private Expression primary() {
@@ -433,6 +560,19 @@ public class Parser {
         }
         if (match(TokenType.HEX_NUMBER)) {
             return new ValueExpression(Long.parseLong(current.getText(), 16));
+        }
+        if (match(TokenType.NEW)) {
+            String cls = consume(TokenType.WORD).getText();
+            consume(TokenType.LPAREN);
+            List<Expression> args = new java.util.ArrayList<>();
+            while (!match(TokenType.RPAREN)) {
+                args.add(expression());
+                match(TokenType.COM);
+            }
+            return new ObjectCreationExpression(cls, args);
+        }
+        if (match(TokenType.THIS)) {
+            return new VariableExpression("this");
         }
         if (get(0).getType() == TokenType.WORD && get(1).getType() == TokenType.LPAREN) {
             return function();
@@ -459,7 +599,34 @@ public class Parser {
     }
 
 
-
+    private Expression postfix() {
+        Expression expr = primary();
+        while (true) {
+            if (match(TokenType.DOT)) {
+                String name = consume(TokenType.WORD).getText();
+                List<Expression> args = null;
+                if (match(TokenType.LPAREN)) {
+                    args = new ArrayList<>();
+                    while (!match(TokenType.RPAREN)) {
+                        args.add(expression());
+                        match(TokenType.COM);
+                    }
+                }
+                expr = new MemberAccessExpression(expr, name, args);
+            } else if (lookMatch(0, TokenType.LBRACKET)) {
+                List<Expression> indices = new ArrayList<>();
+                while (lookMatch(0, TokenType.LBRACKET)) {
+                    consume(TokenType.LBRACKET);
+                    indices.add(expression());
+                    consume(TokenType.RBRACKET);
+                }
+                expr = new ExprArrayAccessExpression(expr, indices);
+            } else {
+                break;
+            }
+        }
+        return expr;
+    }
 
 
 

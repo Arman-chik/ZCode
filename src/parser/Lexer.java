@@ -16,7 +16,7 @@ public class Lexer {
     private int row, col;
 
 
-    private static String OPERATOR_CHARS = "+-*/%(){}[]=<>!&|;,^~?:";
+    private static String OPERATOR_CHARS = "+-*/%(){}[]=<>!&|;,^~?:.";
 
 
     private static Map<String, TokenType> OPERATORS;
@@ -42,6 +42,7 @@ public class Lexer {
         OPERATORS.put("~", TokenType.TILDE);
         OPERATORS.put("?", TokenType.QUESTION);
         OPERATORS.put(":", TokenType.COLON);
+        OPERATORS.put(".", TokenType.DOT);
 
         OPERATORS.put("!", TokenType.EXCL);
         OPERATORS.put("&", TokenType.AMP);
@@ -183,6 +184,9 @@ public class Lexer {
             case "def": addToken(TokenType.DEF); break;
             case "return": addToken(TokenType.RETURN); break;
             case "use": addToken(TokenType.USE); break;
+            case "class": addToken(TokenType.CLASS); break;
+            case "new": addToken(TokenType.NEW); break;
+            case "this": addToken(TokenType.THIS); break;
             default:
                 addToken(TokenType.WORD, word);
                 break;
