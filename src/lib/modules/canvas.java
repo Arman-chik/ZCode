@@ -2,14 +2,13 @@ package lib.modules;
 
 import lib.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.imageio.ImageIO;
+import java.io.File;
 
 public class canvas implements Module {
 
@@ -21,7 +20,9 @@ public class canvas implements Module {
     private static BufferedImage img;
 
     private static NumberValue lastKey;
+    private static boolean[] keyStates = new boolean[256]; // ASCII + виртуальные коды
     private static ArrayValue mouseHover;
+    private static NumberValue mouseButton;
 
     @FunctionalInterface
     private interface IntConsumer4 {
@@ -89,6 +90,18 @@ public class canvas implements Module {
         // Получение последней нажатой клавиши
         Functions.set("keypressed", args -> lastKey);
 
+        // В методе init(), после регистрации keypressed:
+        Functions.set("keyIsDown", args -> {
+            if (args.length != 1) {
+                throw new RuntimeException("keyIsDown ожидает 1 аргумент: код клавиши");
+            }
+            int code = (int) args[0].asNumber();
+            if (code >= 0 && code < keyStates.length) {
+                return new NumberValue(keyStates[code] ? 1 : 0);
+            }
+            return NumberValue.ZERO;
+        });
+
         // Получение координат мыши
         Functions.set("mousehover", args -> mouseHover);
 
@@ -134,6 +147,10 @@ public class canvas implements Module {
             return NumberValue.ZERO;
         });
 
+        Functions.set("mousebutton", args -> {
+            return mouseButton;
+        });
+
         // Перерисовка окна
         Functions.set("repaint", args -> {
             panel.invalidate();
@@ -173,9 +190,108 @@ public class canvas implements Module {
             return NumberValue.ZERO;
         });
 
+        // ширина холста
+        Functions.set("width", args -> new NumberValue(img != null ? img.getWidth() : 0));
+
+        // высота холста
+        Functions.set("height", args -> new NumberValue(img != null ? img.getHeight() : 0));
+
+        // X курсора
+        Functions.set("mouseX", args -> new NumberValue(mouseHover.get(0).asNumber()));
+
+        // Y курсора
+        Functions.set("mouseY", args -> new NumberValue(mouseHover.get(1).asNumber()));
+
+        // нажата ли кнопка мыши
+        Functions.set("mouseDown", args -> new NumberValue(mouseButton.asNumber() > 0 ? 1 : 0));
+
+        // прозрачность рисования (0.0 - 1.0)
+        Functions.set("alpha", args -> {
+            float a = (float) args[0].asNumber();
+            java.awt.Color c = graphics.getColor();
+            graphics.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(a * 255)));
+            return NumberValue.ZERO;
+        });
+
+        // дуга (углы в градусах)
+        Functions.set("arc", args -> {
+            int x=(int)args[0].asNumber(), y=(int)args[1].asNumber(), w=(int)args[2].asNumber(), h=(int)args[3].asNumber();
+            int start=(int)args[4].asNumber(), end=(int)args[5].asNumber();
+            graphics.drawArc(x, y, w, h, start, end);
+            return NumberValue.ZERO;
+        });
+
+        // залитая дуга
+        Functions.set("fillArc", args -> {
+            int x=(int)args[0].asNumber(), y=(int)args[1].asNumber(), w=(int)args[2].asNumber(), h=(int)args[3].asNumber();
+            int start=(int)args[4].asNumber(), end=(int)args[5].asNumber();
+            graphics.fillArc(x, y, w, h, start, end);
+            return NumberValue.ZERO;
+        });
+
+        // стиль 0=plain, 1=bold, 2=italic
+        Functions.set("font", args -> {
+            int fStyle = ((int)args[1].asNumber() == 1) ? java.awt.Font.BOLD : (((int)args[1].asNumber() == 2) ? java.awt.Font.ITALIC : java.awt.Font.PLAIN);
+            graphics.setFont(new java.awt.Font(args[0].asString(), fStyle, (int)args[2].asNumber()));
+            return NumberValue.ZERO;
+        });
+
+        // ширина текста текущим шрифтом
+        Functions.set("textWidth", args -> new NumberValue(graphics.getFontMetrics().stringWidth(args[0].asString())));
+
+        // 11. saveImage(path) -> сохранение холста в PNG
+        Functions.set("saveImage", args -> {
+            try { ImageIO.write(img, "png", new File(args[0].asString())); return NumberValue.ONE; }
+            catch (Exception e) { return NumberValue.ZERO; }
+        });
+
+        // отрисовка изображения
+        Functions.set("drawImage", args -> {
+            try {
+                java.awt.Image image = ImageIO.read(new File(args[0].asString()));
+                if (args.length == 5) graphics.drawImage(image, (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber(), (int)args[4].asNumber(), null);
+                else graphics.drawImage(image, (int)args[1].asNumber(), (int)args[2].asNumber(), null);
+                return NumberValue.ONE;
+            } catch (Exception e) { return NumberValue.ZERO; }
+        });
+
+        // алгоритм заливки через стек
+        Functions.set("floodFill", args -> {
+            if (img == null) throw new RuntimeException("Сначала вызовите window()");
+            int sx = (int)args[0].asNumber(), sy = (int)args[1].asNumber(), r = (int)args[2].asNumber(), g = (int)args[3].asNumber(), b = (int)args[4].asNumber();
+            int target = img.getRGB(sx, sy), fill = new java.awt.Color(r, g, b).getRGB();
+            if (target == fill) return NumberValue.ZERO;
+            int[] stack = new int[img.getWidth() * img.getHeight()]; int top = 0;
+            stack[top++] = sx; stack[top++] = sy;
+            int w = img.getWidth(), h = img.getHeight();
+            while (top > 0) {
+                int cy = stack[--top], cx = stack[--top];
+                if (cx < 0 || cx >= w || cy < 0 || cy >= h || img.getRGB(cx, cy) != target) continue;
+                img.setRGB(cx, cy, fill);
+                stack[top++] = cx+1; stack[top++] = cy;
+                stack[top++] = cx-1; stack[top++] = cy;
+                stack[top++] = cx; stack[top++] = cy+1;
+                stack[top++] = cx; stack[top++] = cy-1;
+            }
+            return NumberValue.ZERO;
+        });
+
+        // сменить заголовок окна
+        Functions.set("windowTitle", args -> {
+            if (frame != null) {
+                frame.setTitle(args[0].asString());
+            }
+            return NumberValue.ZERO;
+        });
+
+        // закрыть окно
+        Functions.set("closeWindow", args -> { if (frame != null) frame.dispose(); return NumberValue.ZERO; });
+
+
         // Инициализация состояния
         lastKey = MINUS_ONE;
         mouseHover = new ArrayValue(new Value[]{NumberValue.ZERO, NumberValue.ZERO});
+        mouseButton = NumberValue.ZERO;
     }
 
     // Внутренний класс панели для рисования
@@ -188,20 +304,56 @@ public class canvas implements Module {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             setFocusable(true);
             requestFocus();
+
             addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    lastKey = new NumberValue(e.getKeyCode());
+                    int code = e.getKeyCode();
+                    lastKey = new NumberValue(code);
+                    if (code >= 0 && code < keyStates.length) {
+                        keyStates[code] = true;
+                    }
+                }
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    int code = e.getKeyCode();
+                    if (code >= 0 && code < keyStates.length) {
+                        keyStates[code] = false;
+                    }
+                    // lastKey сбрасываем только если отпущенная клавиша была "последней"
+                    if (code == lastKey.asNumber()) {
+                        lastKey = MINUS_ONE;
+                    }
+                }
+            });
+
+            // Слушатель нажатий/отпусканий кнопок мыши
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    mouseButton = new NumberValue(e.getButton());
+                    mouseHover.set(0, new NumberValue(e.getX()));
+                    mouseHover.set(1, new NumberValue(e.getY()));
                 }
 
                 @Override
-                public void keyReleased(KeyEvent e) {
-                    lastKey = MINUS_ONE;
+                public void mouseReleased(MouseEvent e) {
+                    mouseButton = NumberValue.ZERO;
+                    mouseHover.set(0, new NumberValue(e.getX()));
+                    mouseHover.set(1, new NumberValue(e.getY()));
                 }
             });
+
+            // Слушатель движений мыши
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
+                    mouseHover.set(0, new NumberValue(e.getX()));
+                    mouseHover.set(1, new NumberValue(e.getY()));
+                }
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
                     mouseHover.set(0, new NumberValue(e.getX()));
                     mouseHover.set(1, new NumberValue(e.getY()));
                 }

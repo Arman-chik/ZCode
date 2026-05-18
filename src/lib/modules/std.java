@@ -126,7 +126,6 @@ public class std implements Module {
                 }
                 return reversed;
             } else {
-                // Для строк разворот уже есть в strings модуле, но оставим для обратной совместимости
                 String str = args[0].asString();
                 return new StringValue(new StringBuilder(str).reverse().toString());
             }
