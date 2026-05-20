@@ -1,0 +1,207 @@
+// ==========================================
+// 🎓 ZCODE FULL FEATURE DEMONSTRATION
+// Файл демонстрирует ВСЕ ключевые возможности языка
+// ==========================================
+
+// 1. ПОДКЛЮЧЕНИЕ МОДУЛЕЙ
+use "math"
+use "strings"
+use "std"
+use "files"
+use "types"
+
+print " ЗАПУСК ДЕМОНСТРАЦИИ ZCODE\n"
+print "============================\n"
+
+// ==========================================
+// 2. ПЕРЕМЕННЫЕ И ПРОВЕРКА ТИПОВ
+// ==========================================
+print " 1. ПЕРЕМЕННЫЕ И ТИПЫ\n"
+num = 42.5
+str = "ZCode"
+arr = [10, 20, 30]
+
+print "  Число: " + num + " | Тип: " + typeOf(num) + "\n"
+print "  Строка: '" + str + "' | Тип: " + typeOf(str) + "\n"
+print "  Массив: " + arr + " | Тип: " + typeOf(arr) + "\n"
+print "  Проверки: isNumber=" + isNumber(num) + ", isString=" + isString(str) + ", isArray=" + isArray(arr) + "\n"
+
+// ==========================================
+// 3. ОПЕРАТОРЫ (Арифметика, Логика, Побитовые, Тернарный)
+// ==========================================
+print "\n 2. ОПЕРАТОРЫ\n"
+print "  Арифметика: (10 + 5) * 2 = " + ((10 + 5) * 2) + "\n"
+print "  Деление/Остаток: 17 / 4 = " + (17 / 4) + ", 17 % 4 = " + (17 % 4) + "\n"
+print "  Сравнение: 5 == 5 -> " + (5 == 5) + ", 5 != 3 -> " + (5 != 3) + "\n"
+print "  Логика: (1 && 0) || 1 = " + ((1 && 0) || 1) + "\n"
+print "  Побитовые: 10 & 12 = " + (10 & 12) + ", ~5 = " + ~5 + "\n"
+print "  Тернарный: " + (num > 0 ? "Положительное" : "Отрицательное") + "\n"
+
+// ==========================================
+// 4. МАССИВЫ (1D, 2D, Push/Pop, Len)
+// В ZCode массивы иммутабельны: push/pop/reverse возвращают НОВЫЙ массив!
+// ==========================================
+print "\n 3. МАССИВЫ\n"
+nums = [1, 2, 3]
+nums = push(nums, 4, 5)
+print "  После push: " + nums + " (len=" + len(nums) + ")\n"
+
+nums = pop(nums)
+print "  После pop: " + nums + "\n"
+
+rev = reverseArray(nums)
+print "  Reverse: " + rev + "\n"
+
+// Двумерный массив
+matrix = newArray(3, 3)
+for (i = 0; i < 3; i = i + 1) {
+  for (j = 0; j < 3; j = j + 1) {
+    matrix[i][j] = i * 10 + j
+  }
+}
+print "  Матрица[1][2]: " + matrix[1][2] + "\n"
+
+// ==========================================
+// 5. СТРОКИ И ОБРАБОТКА ТЕКСТА
+// ==========================================
+print "\n 4. СТРОКИ\n"
+text = "  Hello ZCode World!  "
+print "  Исходная: '" + text + "'\n"
+print "  Trim: '" + trim(text) + "'\n"
+print "  Upper: " + toUpperCase(text) + "\n"
+print "  Lower: " + toLowerCase(text) + "\n"
+print "  Replace: " + replace(text, "World", "Language") + "\n"
+print "  Substring: " + substring(text, 2, 7) + "\n"
+print "  IndexOf 'Z': " + indexOf(text, "Z") + "\n"
+print "  Starts/Ends: " + (startsWith(text, "  H") ? "Yes" : "No") + "/" + (endsWith(text, "!  ") ? "Yes" : "No") + "\n"
+
+// ==========================================
+// 6. УПРАВЛЕНИЕ ПОТОКОМ (циклы, условия, break/continue)
+// ==========================================
+print "\n 5. УПРАВЛЕНИЕ ПОТОКОМ\n"
+print "  For loop:"
+for (i = 1; i <= 6; i = i + 1) {
+  if i == 3 { continue } // Пропускаем 3
+  if i == 5 { break }    // Выходим на 5
+  print " " + i
+}
+print "\n"
+
+print "  While loop:"
+cnt = 0
+while cnt < 4 {
+  cnt = cnt + 1
+  print " " + cnt
+}
+print "\n"
+
+// Do-While
+print "  Do-While (выполнится 1 раз): "
+doCnt = 0
+do {
+  print " [Run]"
+  doCnt = doCnt + 1
+} while doCnt < 0
+print "\n"
+
+// ==========================================
+// 7. ПОЛЬЗОВАТЕЛЬСКИЕ ФУНКЦИИ (в т.ч. рекурсия)
+// ==========================================
+print "\n 6. ФУНКЦИИ\n"
+def square(x) {
+  return x * x
+}
+print "  square(7) = " + square(7) + "\n"
+
+def factorial(n) {
+  if n <= 1 { return 1 }
+  return n * factorial(n - 1)
+}
+print "  factorial(6) = " + factorial(6) + "\n"
+
+// Функция с возвратом массива
+def makeRange(start, end) {
+  res = []
+  for (i = start; i <= end; i = i + 1) {
+    res = push(res, i)
+  }
+  return res
+}
+print "  makeRange(10, 15) = " + makeRange(10, 15) + "\n"
+
+// ==========================================
+// 8. ООП: КЛАССЫ, КОНСТРУКТОРЫ, this, КОМПОЗИЦИЯ
+// ==========================================
+print "\n 7. КЛАССЫ И ООП\n"
+class Animal {
+  name age
+  Animal(n, a) {
+    this.name = n
+    this.age = a
+  }
+  getInfo() {
+    return this.name + " (age: " + this.age + ")"
+  }
+  speak() {
+    print "  [" + this.name + "] издает звук!\n"
+  }
+}
+
+class Dog {
+  animal breed
+  Dog(name, age, b) {
+    this.animal = new Animal(name, age) // Композиция
+    this.breed = b
+  }
+  bark() {
+    this.animal.speak()
+    print "  Порода: " + this.breed + "\n"
+  }
+}
+
+dog = new Dog("Бобик", 5, "Корги")
+print "  Инфо: " + dog.animal.getInfo() + "\n"
+dog.bark()
+
+// ==========================================
+// 9. МАТЕМАТИКА И КОНСТАНТЫ
+// ==========================================
+print "\n 8. МАТЕМАТИКА\n"
+print "  PI = " + pi + "\n"
+print "  sqrt(144) = " + sqrt(144) + "\n"
+print "  pow(2, 8) = " + pow(2, 8) + "\n"
+print "  sin(pi/2) = " + sin(pi / 2) + "\n"
+print "  abs(-15.7) = " + abs(-15.7) + "\n"
+print "  floor(4.8) = " + floor(4.8) + ", ceil(4.2) = " + ceil(4.2) + "\n"
+print "  random(1, 100) = " + random(1, 100) + "\n"
+
+// ==========================================
+// 10. ФАЙЛОВАЯ СИСТЕМА
+// ==========================================
+print "\n 9. ФАЙЛЫ\n"
+demoPath = "zcode_demo.txt"
+if !fileExists(demoPath) {
+  writeFile(demoPath, "Привет, ZCode!\nВторая строка.")
+  print "   Файл создан\n"
+} else {
+  print "   Файл уже существует\n"
+}
+
+appendFile(demoPath, "\nДобавлено через appendFile().")
+content = readFile(demoPath)
+print "   Содержимое:\n" + content + "\n"
+
+lines = readLines(demoPath)
+print "   Строк в файле: " + len(lines) + "\n"
+print "   Первая строка: " + lines[0] + "\n"
+
+// ==========================================
+// 11. ИНТЕРАКТИВ И ЗАВЕРШЕНИЕ
+// ==========================================
+print "\n 10. ИНТЕРАКТИВ\n"
+print "  Введите тестовое слово: "
+userIn = input("")
+print "  Вы ввели: '" + userIn + "' (длина: " + len(userIn) + ")\n"
+
+print "\n ДЕМОНСТРАЦИЯ УСПЕШНО ЗАВЕРШЕНА \n"
+print "ZCode обработал: типы, операторы, массивы, строки,\nциклы, функции, рекурсию, ООП, мат.библиотеку и файловый ввод/вывод.\n"

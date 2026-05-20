@@ -1,0 +1,10 @@
+Привет, ZCode!
+Вторая строка.
+Добавлено через appendFile().
+Добавлено через appendFile().
+Добавлено через appendFile().
+Добавлено через appendFile().
+Добавлено через appendFile().
+Добавлено через appendFile().
+Добавлено через appendFile().
+Добавлено через appendFile().

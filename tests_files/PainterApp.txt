@@ -1,0 +1,375 @@
+use "canvas"
+use "math"
+use "std"
+use "files"
+
+// ==================== КЛАСС: Кисть ====================
+class Brush {
+    colorR colorG colorB size
+    Brush(r, g, b, s) {
+        this.colorR = r
+        this.colorG = g
+        this.colorB = b
+        this.size = s
+    }
+    apply() {
+        color(this.colorR, this.colorG, this.colorB)
+        stroke(this.size)
+    }
+}
+
+// ==================== КЛАСС: Рисовалка ====================
+class Painter {
+    brush drawing lastX lastY colors colorIndex mouseBtn prevMouseBtn
+    tool panelH canvasW canvasH
+    // 0-кисть, 1-ластик, 2-прямоугольник, 3-овал, 4-заливка, 5-пипетка
+
+    Painter() {
+        this.brush = new Brush(0, 0, 0, 3)
+        this.drawing = 0
+        this.lastX = -1
+        this.lastY = -1
+        this.colorIndex = 0
+        this.mouseBtn = 0
+        this.prevMouseBtn = 0
+        this.tool = 0
+        this.panelH = 80
+        this.canvasW = 1000
+        this.canvasH = 700
+
+        // Палитра: 10 цветов [R, G, B]
+        this.colors = newArray(10, 3)
+        // Чёрный
+        this.colors[0][0] = 0
+        this.colors[0][1] = 0
+        this.colors[0][2] = 0
+        // Красный
+        this.colors[1][0] = 255
+        this.colors[1][1] = 0
+        this.colors[1][2] = 0
+        // Зелёный
+        this.colors[2][0] = 0
+        this.colors[2][1] = 255
+        this.colors[2][2] = 0
+        // Синий
+        this.colors[3][0] = 0
+        this.colors[3][1] = 0
+        this.colors[3][2] = 255
+        // Жёлтый
+        this.colors[4][0] = 255
+        this.colors[4][1] = 255
+        this.colors[4][2] = 0
+        // Оранжевый
+        this.colors[5][0] = 255
+        this.colors[5][1] = 165
+        this.colors[5][2] = 0
+        // Фиолетовый
+        this.colors[6][0] = 128
+        this.colors[6][1] = 0
+        this.colors[6][2] = 128
+        // Голубой
+        this.colors[7][0] = 0
+        this.colors[7][1] = 255
+        this.colors[7][2] = 255
+        // Серый
+        this.colors[8][0] = 128
+        this.colors[8][1] = 128
+        this.colors[8][2] = 128
+        // Белый (ластик)
+        this.colors[9][0] = 255
+        this.colors[9][1] = 255
+        this.colors[9][2] = 255
+    }
+
+    drawPalette() {
+        toolNames = newArray(7)
+        toolNames[0] = "Кисть"
+        toolNames[1] = "Ластик"
+        toolNames[2] = "Прямоуг."
+        toolNames[3] = "Овал"
+        toolNames[4] = "Заливка"
+        toolNames[5] = "Пипетка"
+        toolNames[6] = "Очистить"
+
+        // Панель инструментов сверху
+        color(60, 60, 60)
+        frect(0, 0, this.canvasW, this.panelH)
+
+        // Заголовок
+        color(200, 200, 200)
+        drawstring("Инструменты:", 10, 18)
+
+        // Кнопки инструментов (верхний ряд)
+        for i = 0; i < 7; i = i + 1 {
+            x = 10 + i * 95
+            y = 22
+            w = 88
+            h = 22
+
+            if i == this.tool || (i == 6 && this.tool == 99) {
+                color(100, 180, 255)
+            } else {
+                color(80, 80, 80)
+            }
+            frect(x, y, w, h)
+
+            color(255, 255, 255)
+            drawstring(toolNames[i], x + 5, y + 16)
+        }
+
+        // Палитра цветов (нижний ряд)
+        color(200, 200, 200)
+        drawstring("Цвета (1-0):", 10, 58)
+
+        for i = 0; i < 10; i = i + 1 {
+            x = 110 + i * 30
+            y = 44
+            size = 22
+
+            color(this.colors[i][0], this.colors[i][1], this.colors[i][2])
+            frect(x, y, size, size)
+
+            if i == this.colorIndex {
+                color(255, 255, 0)
+                rect(x - 2, y - 2, size + 4, size + 4)
+                color(0, 0, 0)
+                rect(x - 1, y - 1, size + 2, size + 2)
+            }
+        }
+
+        // Размер кисти
+        color(200, 200, 200)
+        drawstring("Размер: " + this.brush.size, 420, 58)
+
+        // Кнопки размера
+        color(80, 80, 80)
+        frect(490, 44, 20, 20)
+        color(255, 255, 255)
+        drawstring("-", 497, 59)
+
+        color(80, 80, 80)
+        frect(515, 44, 20, 20)
+        color(255, 255, 255)
+        drawstring("+", 522, 59)
+    }
+
+    draw() {
+        // Заливаем только панель (холст не трогаем)
+        this.drawPalette()
+
+        // Подсказка внизу
+        color(150, 150, 150)
+        drawstring("Инструменты: клик мышью | Цвета: 1-0 на клавиатуре | Размер: [-] [+] | Esc - выход", 10, this.canvasH - 10)
+        repaint()
+    }
+
+    handleInput() {
+        mx = mousehover()[0]
+        my = mousehover()[1]
+        key = keypressed()
+        this.mouseBtn = mousebutton()
+
+        isClick = (this.mouseBtn == 1 && this.prevMouseBtn == 0)
+
+        // ======= ОБРАБОТКА КЛИКОВ В ПАНЕЛИ ИНСТРУМЕНТОВ =======
+        if my <= this.panelH && isClick {
+            // Проверяем клик по инструментам (верхний ряд)
+            if my >= 22 && my <= 44 {
+                for i = 0; i < 7; i = i + 1 {
+                    x = 10 + i * 95
+                    if mx >= x && mx <= x + 88 {
+                        if i == 6 {
+                            this.clearCanvas()
+                        } else {
+                            this.tool = i
+                        }
+                    }
+                }
+            }
+
+            // Проверяем клик по цветам (нижний ряд)
+            if my >= 44 && my <= 66 {
+                for i = 0; i < 10; i = i + 1 {
+                    x = 110 + i * 30
+                    if mx >= x && mx <= x + 22 {
+                        this.selectColor(i)
+                    }
+                }
+            }
+
+            // Кнопки размера кисти
+            if my >= 44 && my <= 64 {
+                // Кнопка "-"
+                if mx >= 490 && mx <= 510 {
+                    if this.brush.size > 1 {
+                        this.brush.size = this.brush.size - 1
+                    }
+                }
+                // Кнопка "+"
+                if mx >= 515 && mx <= 535 {
+                    if this.brush.size < 30 {
+                        this.brush.size = this.brush.size + 1
+                    }
+                }
+            }
+        }
+
+        // ======= ОБРАБОТКА КЛАВИАТУРЫ =======
+        // Выбор цвета (клавиши 1-9 и 0)
+        if key >= 49 && key <= 57 {
+            this.selectColor(key - 49)  // 1-9 -> индексы 0-8
+        }
+        if key == 48 {
+            this.selectColor(9)  // 0 -> индекс 9 (белый)
+        }
+
+        // Инструменты по клавишам
+        if key == 66 { this.tool = 0 }  // B - кисть
+        if key == 69 { this.tool = 1 }  // E - ластик
+        if key == 82 { this.tool = 2 }  // R - прямоугольник
+        if key == 79 { this.tool = 3 }  // O - овал
+        if key == 70 { this.tool = 4 }  // F - заливка
+        if key == 80 { this.tool = 5 }  // P - пипетка
+
+        // Размер кисти клавишами
+        if key == 61 || key == 43 {  // + или =
+            if this.brush.size < 30 {
+                this.brush.size = this.brush.size + 1
+            }
+        }
+        if key == 45 {  // -
+            if this.brush.size > 1 {
+                this.brush.size = this.brush.size - 1
+            }
+        }
+
+        // ======= РИСОВАНИЕ НА ХОЛСТЕ =======
+        if my > this.panelH {
+            if this.mouseBtn == 1 {
+                if this.tool == 0 {  // Кисть
+                    this.brush.apply()
+                    if !this.drawing {
+                        this.drawing = 1
+                        this.lastX = mx
+                        this.lastY = my
+                        // Рисуем точку при первом нажатии
+                        line(mx, my, mx, my)
+                    } else {
+                        line(this.lastX, this.lastY, mx, my)
+                        this.lastX = mx
+                        this.lastY = my
+                    }
+                }
+
+                if this.tool == 1 {  // Ластик (рисует белым)
+                    color(255, 255, 255)
+                    stroke(this.brush.size + 5)
+                    if !this.drawing {
+                        this.drawing = 1
+                        this.lastX = mx
+                        this.lastY = my
+                        line(mx, my, mx, my)
+                    } else {
+                        line(this.lastX, this.lastY, mx, my)
+                        this.lastX = mx
+                        this.lastY = my
+                    }
+                }
+
+                if this.tool == 2 && isClick {  // Прямоугольник (начало)
+                    this.drawing = 1
+                    this.lastX = mx
+                    this.lastY = my
+                }
+
+                if this.tool == 3 && isClick {  // Овал (начало)
+                    this.drawing = 1
+                    this.lastX = mx
+                    this.lastY = my
+                }
+
+                if this.tool == 4 && isClick {  // Заливка
+                    this.floodFill(mx, my)
+                }
+
+                if this.tool == 5 && isClick {  // Пипетка
+                    // Упрощённо: берём цвет кисти как образец
+                    // В реальности нужно читать пиксель, но здесь просто для демонстрации
+                    // Установим текущий цвет
+                }
+            } else {
+                // Отпустили кнопку мыши
+                if this.drawing && (this.tool == 2) {
+                    // Рисуем прямоугольник
+                    this.brush.apply()
+                    rx = min(this.lastX, mx)
+                    ry = min(this.lastY, my)
+                    rw = abs(mx - this.lastX)
+                    rh = abs(my - this.lastY)
+                    rect(rx, ry, rw, rh)
+                }
+                if this.drawing && (this.tool == 3) {
+                    // Рисуем овал
+                    this.brush.apply()
+                    rx = min(this.lastX, mx)
+                    ry = min(this.lastY, my)
+                    rw = abs(mx - this.lastX)
+                    rh = abs(my - this.lastY)
+                    oval(rx, ry, rw, rh)
+                }
+                this.drawing = 0
+            }
+        } else {
+            this.drawing = 0
+        }
+
+        this.prevMouseBtn = this.mouseBtn
+    }
+
+    floodFill(x, y) {
+        // Заглушка для заливки (полноценная реализация сложная)
+        // Просто рисуем большой круг текущим цветом
+        this.brush.apply()
+        foval(x - 20, y - 20, 40, 40)
+    }
+
+    selectColor(index) {
+        this.colorIndex = index
+        this.brush.colorR = this.colors[this.colorIndex][0]
+        this.brush.colorG = this.colors[this.colorIndex][1]
+        this.brush.colorB = this.colors[this.colorIndex][2]
+        // Если выбран не ластик, переключаем на кисть
+        if this.tool == 1 && index != 9 {
+            this.tool = 0
+        }
+    }
+
+    clearCanvas() {
+        color(255, 255, 255)
+        frect(0, this.panelH, this.canvasW, this.canvasH - this.panelH)
+        repaint()
+    }
+
+    save() {
+        appendFile("drawing.txt", "=== Saved: " + floor(random(1000, 9999)) + " ===\n")
+        color(100, 255, 100)
+        drawstring("Сохранено!", this.canvasW - 100, this.panelH + 20)
+        repaint()
+        sleep(1000)
+    }
+
+    run() {
+        window("Рисовалка Pro", this.canvasW, this.canvasH)
+        this.clearCanvas()
+        while true {
+            this.handleInput()
+            this.draw()
+            sleep(16)
+            if keypressed() == VK_ESCAPE { break }
+        }
+    }
+}
+
+// ==================== ЗАПУСК ====================
+app = new Painter()
+app.run()

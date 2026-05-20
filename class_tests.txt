@@ -1,0 +1,22 @@
+use "std"
+
+class Player {
+  x y name
+
+  Player(x, y, name) {
+    this.x = x
+    this.y = y
+    this.name = name
+  }
+
+  move(dx, dy) {
+    this.x = this.x + dx
+    this.y = this.y + dy
+    echo("Пользователь " + this.name + " сделал ход на " + this.x + ", " + this.y)
+  }
+}
+
+p = new Player(10, 20, "Арман")
+p.move(5, 10)
+echo("X: " + p.x)
+echo("Y: " + p.y)

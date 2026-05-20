@@ -1,0 +1,155 @@
+use "canvas"
+use "math"
+use "std"
+
+// ==================== КЛАСС: Сегмент змейки ====================
+class Segment {
+    x y
+    Segment(x, y) {
+        this.x = x
+        this.y = y
+    }
+}
+
+// ==================== КЛАСС: Игра Змейка ====================
+class SnakeGame {
+    snake score foodX foodY gridSize cellSize running direction
+
+    SnakeGame() {
+        this.gridSize = 20
+        this.cellSize = 20
+        this.score = 0
+        this.direction = 1  // 1=вправо, 2=вниз, 3=влево, 4=вверх
+        this.running = 1
+        this.snake = newArray(100)  // макс. длина
+
+        // Начальная змейка (3 сегмента)
+        for i = 0; i < 3; i = i + 1 {
+            this.snake[i] = new Segment(10 - i, 10)
+        }
+
+        this.spawnFood()
+    }
+
+    spawnFood() {
+        this.foodX = floor(random(0, 40))
+        this.foodY = floor(random(0, 30))
+        // Проверка только занятых сегментов
+        for i = 0; i < this.score + 3; i = i + 1 {
+            segment = this.snake[i]
+            if segment == 0 { break }
+            if segment.x == this.foodX {
+                if segment.y == this.foodY {
+                    this.spawnFood()
+                    return
+                }
+            }
+        }
+    }
+
+    update() {
+        headX = this.snake[0].x
+        headY = this.snake[0].y
+        if this.direction == 1 { headX = headX + 1 }
+        if this.direction == 2 { headY = headY + 1 }
+        if this.direction == 3 { headX = headX - 1 }
+        if this.direction == 4 { headY = headY - 1 }
+
+        // Телепортация через границы
+        if headX < 0 { headX = 39 }
+        if headX >= 40 { headX = 0 }
+        if headY < 0 { headY = 29 }
+        if headY >= 30 { headY = 0 }
+
+        // Столкновение с собой
+        for i = 0; i < this.score + 3; i = i + 1 {
+            seg = this.snake[i]
+            if seg == 0 { break } // Защита от пустых ячеек
+            if seg.x == headX && seg.y == headY {
+                this.running = 0
+                return
+            }
+        }
+
+
+        for i = this.score + 2; i > 0; i = i - 1 {
+            this.snake[i] = this.snake[i - 1]
+        }
+
+        // Ставим новую голову
+        this.snake[0] = new Segment(headX, headY)
+
+        // Проверяем поедание (после сдвига!)
+        if headX == this.foodX && headY == this.foodY {
+            this.score = this.score + 1
+            this.spawnFood()
+        }
+    }
+
+    draw() {
+        // Фон
+        color(0, 0, 0)
+        frect(0, 0, 800, 600)
+
+        // Змейка
+        for i = 0; i < this.score + 3; i = i + 1 {
+            if this.snake[i] == 0 { break } // Останавливаем отрисовку на пустых ячейках
+            if i == 0 {
+                color(0, 255, 0)  // Голова
+            } else {
+                color(0, 200, 0)  // Тело
+            }
+            frect(this.snake[i].x * 20, this.snake[i].y * 20, 18, 18)
+        }
+
+        // Еда
+        color(255, 0, 0)
+        foval(this.foodX * 20 + 2, this.foodY * 20 + 2, 16, 16)
+
+        // Счёт
+        color(255, 255, 255)
+        drawstring("Счёт: " + this.score, 10, 20)
+
+        repaint()
+    }
+
+    handleInput() {
+        key = keypressed()
+        // Стрелки
+        if key == VK_RIGHT && this.direction != 3 { this.direction = 1 }
+        if key == VK_DOWN  && this.direction != 4 { this.direction = 2 }
+        if key == VK_LEFT  && this.direction != 1 { this.direction = 3 }
+        if key == VK_UP    && this.direction != 2 { this.direction = 4 }
+
+        // WASD (проверка по ASCII-кодам)
+        if key == 68 { if this.direction != 3 { this.direction = 1 } } // D
+        if key == 83 { if this.direction != 4 { this.direction = 2 } } // S
+        if key == 65 { if this.direction != 1 { this.direction = 3 } } // A
+        if key == 87 { if this.direction != 2 { this.direction = 4 } } // W
+    }
+
+    showGameOver() {
+        color(255, 0, 0)
+        drawstring("GAME OVER!", 300, 280)
+        drawstring("Счёт: " + this.score, 320, 310)
+        drawstring("Нажми ESC для выхода", 250, 340)
+        repaint()
+        sleep(2000)
+    }
+
+    run() {
+        window("Змейка", 800, 600)
+        while this.running {
+            this.handleInput()
+            this.update()
+            this.draw()
+            sleep(100)
+            if keypressed() == VK_ESCAPE { break }
+        }
+        if !this.running { this.showGameOver() }
+    }
+}
+
+// ==================== ЗАПУСК ====================
+game = new SnakeGame()
+game.run()

@@ -1,0 +1,166 @@
+use "canvas"
+use "math"
+use "std"
+
+// ==================== КЛАСС: Ракетка ====================
+class Paddle {
+    x y width height speed
+    Paddle(x, y, w, h, spd) {
+        this.x = x
+        this.y = y
+        this.width = w
+        this.height = h
+        this.speed = spd
+    }
+    move(dy) {
+        this.y = this.y + dy
+        if this.y < 0 { this.y = 0 }
+        if this.y > 600 - this.height { this.y = 600 - this.height }
+    }
+    draw(r, g, b) {
+        color(r, g, b)
+        frect(this.x, this.y, this.width, this.height)
+    }
+}
+
+// ==================== КЛАСС: Мяч ====================
+class Ball {
+    x y size dx dy
+    Ball(x, y, s, dxv, dyv) {
+        this.x = x
+        this.y = y
+        this.size = s
+        this.dx = dxv
+        this.dy = dyv
+    }
+    move() {
+        this.x = this.x + this.dx
+        this.y = this.y + this.dy
+    }
+
+    checkWallCollision() {
+        if this.y <= 0 || this.y >= 600 - this.size { this.dy = -this.dy }
+        // Гол
+        if this.x < 0 { return -1 }  // гол вправо
+        if this.x > 800 - this.size { return 1 }  // гол влево
+        return 0
+    }
+
+    checkPaddleCollision(paddle) {
+        if this.x + this.size >= paddle.x && this.x <= paddle.x + paddle.width {
+            if this.y + this.size >= paddle.y && this.y <= paddle.y + paddle.height {
+                this.dx = -this.dx
+                // Меняем угол в зависимости от места удара
+                hitPos = (this.y - paddle.y) / paddle.height
+                this.dy = this.dy + (hitPos - 0.5) * 6
+            }
+        }
+    }
+
+    draw() {
+        color(255, 255, 255)
+        foval(this.x, this.y, this.size, this.size)
+    }
+
+    reset() {
+        this.x = 395
+        this.y = 295
+        this.dx = random(-3, 3)
+        if this.dx == 0 { this.dx = 2 }
+        this.dy = random(-3, 3)
+    }
+}
+
+// ==================== КЛАСС: Игра ====================
+class PongGame {
+    paddle1 paddle2 ball score1 score2 running
+
+    PongGame() {
+        this.paddle1 = new Paddle(20, 250, 10, 100, 8)
+        this.paddle2 = new Paddle(770, 250, 10, 100, 8)
+        this.ball = new Ball(395, 295, 10, 3, 2)
+        this.score1 = 0
+        this.score2 = 0
+        this.running = 1
+    }
+
+    update() {
+        this.ball.move()
+        result = this.ball.checkWallCollision()
+        if result == -1 {
+            this.score2 = this.score2 + 1
+            this.ball.reset()
+        }
+        if result == 1 {
+            this.score1 = this.score1 + 1
+            this.ball.reset()
+        }
+
+        this.ball.checkPaddleCollision(this.paddle1)
+        this.ball.checkPaddleCollision(this.paddle2)
+
+        // Победа
+        if this.score1 >= 5 || this.score2 >= 5 { this.running = 0 }
+    }
+
+    handleInput() {
+        // Игрок 1: W/S (ASCII: W=87, S=83)
+        if keyIsDown(87) { this.paddle1.move(-this.paddle1.speed) }
+        if keyIsDown(83) { this.paddle1.move(this.paddle1.speed) }
+
+        // Игрок 2: Стрелки (VK_ константы)
+        if keyIsDown(VK_UP) { this.paddle2.move(-this.paddle2.speed) }
+        if keyIsDown(VK_DOWN) { this.paddle2.move(this.paddle2.speed) }
+    }
+
+    draw() {
+        // Фон
+        color(0, 0, 0)
+        frect(0, 0, 800, 600)
+
+        // Сетка по центру
+        color(100, 100, 100)
+        for i = 0; i < 600; i = i + 20 {
+            frect(399, i, 2, 10)
+        }
+
+        // Ракетки и мяч
+        this.paddle1.draw(0, 150, 255)   // Синий
+        this.paddle2.draw(255, 100, 100) // Красный
+        this.ball.draw()
+
+        // Счёт
+        color(255, 255, 255)
+        drawstring(this.score1, 300, 50)
+        drawstring(this.score2, 500, 50)
+        drawstring("P1: W/S  |  P2: ↑/↓", 280, 580)
+
+        repaint()
+    }
+
+    showWinner() {
+        color(255, 255, 0)
+        winner = "Игрок 1"
+        if this.score2 > this.score1 { winner = "Игрок 2" }
+        drawstring(winner + " ПОБЕДИЛ!", 250, 280)
+        drawstring("ESC - выход", 320, 320)
+        repaint()
+        sleep(3000)
+    }
+
+    run() {
+        window("Понг - 2 игрока", 800, 600)
+        while this.running {
+            this.handleInput()
+            this.update()
+            this.draw()
+            sleep(16)
+            if keypressed() == VK_ESCAPE { break }
+        }
+        if !this.running { this.showWinner() }
+    }
+}
+
+// ==================== ЗАПУСК ====================
+game = new PongGame()
+game.run()
