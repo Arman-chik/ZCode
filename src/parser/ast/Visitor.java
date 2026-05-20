@@ -26,4 +26,13 @@ public interface Visitor {
     void visit(VariableExpression s);
     void visit(WhileStatement s);
     void visit(UseStatement s);
+    void visit(ClassDefineStatement s);
+    void visit(MethodDefineStatement s);
+    void visit(ObjectCreationExpression s);
+    void visit(MemberAccessExpression s);
+    void visit(ThisAssignmentStatement s);
+    void visit(ExpressionStatement s);
+    void visit(MemberAssignmentStatement s);
+    void visit(ThisArrayAssignmentStatement s);
+    void visit(ExprArrayAccessExpression s);
 }

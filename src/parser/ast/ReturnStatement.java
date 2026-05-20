@@ -1,5 +1,6 @@
 package parser.ast;
 
+import lib.NumberValue;
 import lib.Value;
 
 public class ReturnStatement extends RuntimeException implements Statement{
@@ -19,7 +20,11 @@ public class ReturnStatement extends RuntimeException implements Statement{
 
     @Override
     public void execute() {
-        result = expression.eval();
+        if (expression != null) {
+            result = expression.eval();
+        } else {
+            result = NumberValue.ZERO;  // return без значения = возвращаем 0
+        }
         throw this;
     }
 
@@ -30,6 +35,6 @@ public class ReturnStatement extends RuntimeException implements Statement{
 
     @Override
     public String toString() {
-        return "return " + expression;
+        return "return " + (expression != null ? expression : "");
     }
 }
