@@ -49,6 +49,64 @@ public abstract class AbstractVisitor implements Visitor {
 
     }
 
+
+    @Override
+    public void visit(ClassDefineStatement s) {
+        for (MethodDefineStatement m : s.methods) {
+            m.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(MethodDefineStatement s) {
+        s.body.accept(this);
+    }
+
+    @Override
+    public void visit(ObjectCreationExpression s) {
+        for (Expression arg : s.args) {
+            arg.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(MemberAccessExpression s) {
+        s.target.accept(this);
+        if (s.callArgs != null) {
+            for (Expression arg : s.callArgs) {
+                arg.accept(this);
+            }
+        }
+    }
+
+    @Override
+    public void visit(ThisAssignmentStatement s) {
+        s.expression.accept(this);
+    }
+
+    @Override
+    public void visit(ExpressionStatement s) {
+        s.expression.accept(this);
+    }
+
+    @Override
+    public void visit(MemberAssignmentStatement s) {
+        s.target.accept(this);
+        s.expression.accept(this);
+    }
+
+    @Override
+    public void visit(ThisArrayAssignmentStatement s) {
+        for (Expression e : s.indices) e.accept(this);
+        s.expression.accept(this);
+    }
+
+    @Override public void visit(ExprArrayAccessExpression s) {
+        s.baseExpr.accept(this);
+        for (Expression e : s.indices) e.accept(this);
+    }
+
+
     @Override
     public void visit(ConditionalExpression s) {
         s.expr1.accept(this);

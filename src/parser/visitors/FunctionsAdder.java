@@ -12,4 +12,11 @@ public class FunctionsAdder extends AbstractVisitor {
         s.execute();
     }
 
+    @Override
+    public void visit(ClassDefineStatement s) {
+        for (MethodDefineStatement m : s.methods) {
+            m.accept(this);
+        }
+        s.execute(); // Регистрация класса в ClassRegistry
+    }
 }
